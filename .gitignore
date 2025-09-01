@@ -1,19 +1,12 @@
-# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 
-# Virtual environment folders
-# If you create a virtual environment, its name should go here
 venv/
 env/
 
-# Environment variables file
-# This is the most important line for security!
 .env
 
-# Temporary files created by the script
 *.mp3
 
-# Operating System and Editor files
 .DS_Store
 .vscode/
