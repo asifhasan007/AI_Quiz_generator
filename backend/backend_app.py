@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import logging
+import re
 
 from quiz_pipeline.video_processing import extract_audio_from_url
 from quiz_pipeline.transcription import transcribe_audio
@@ -9,7 +10,13 @@ from quiz_pipeline.keypoint_extraction import extract_keypoints_improved
 from quiz_pipeline.quiz_generation import generate_quiz_with_gemini, parse_quiz_text
 
 import whisper
-whisper_model = whisper.load_model('base')
+
+try:
+    whisper_model = whisper.load_model('base')
+    logging.info("Whisper model loaded successfully.")
+except Exception as e:
+    logging.critical(f"Failed to load Whisper model: {e}", exc_info=True)
+    whisper_model = None 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 load_dotenv() 
@@ -26,32 +33,54 @@ def handle_quiz_generation():
         app.logger.error("Request failed: Missing 'video_url' in request body")
         return jsonify({"error": "Missing 'video_url' in request body"}), 400
         
-    input_source = data['video_url']
+    input_urls = data['video_url']
+
+    video_urls = [url.strip() for url in re.split(r'[,\s]+', input_urls) if url.strip()]
+
+    if not video_urls:
+        app.logger.error("No valid URLs provided after parsing.")
+        return jsonify({"error": "Please provide at least one valid video URL."}), 400
+
+    all_key_points = []
     
-    if not input_source.startswith(('http://', 'https://')):
-        app.logger.error(f"Invalid input: '{input_source}' is not a valid URL.")
-        return jsonify({"error": "Invalid input source. Please provide a valid URL."}), 400
     try:
-        app.logger.info(f"Step 1: Processing video URL: {input_source}")
-        audio_file = extract_audio_from_url(input_source)
-        if not audio_file:
-            raise Exception("Failed to extract audio from URL.")
-        app.logger.info("-> Audio extraction successful.")
+        for i, url in enumerate(video_urls, 1):
+            if not url.startswith(('http://', 'https://')):
+                app.logger.warning(f"Skipping invalid input: '{url}' is not a valid URL.")
+                continue
 
-        app.logger.info("Step 2: Transcribing audio...")
-        transcribed_text = transcribe_audio(audio_file, whisper_model)
-        if not transcribed_text:
-            raise Exception("Transcription failed or resulted in empty text.")
-        app.logger.info("-> Transcription successful.")
+            app.logger.info(f"--- Processing Video {i}/{len(video_urls)}: {url} ---")
+            
+            app.logger.info(f"Step 1: Extracting audio from {url}")
+            audio_file = extract_audio_from_url(url)
+            if not audio_file:
+                app.logger.error(f"Failed to extract audio from {url}. Skipping this video.")
+                continue
+            app.logger.info("-> Audio extraction successful.")
 
-        app.logger.info("Step 3: Extracting key points...")
-        key_points = extract_keypoints_improved(transcribed_text)
-        if not key_points:
-            raise Exception("Key point extraction failed.")
-        app.logger.info(f"-> Successfully extracted {len(key_points)} key points.")
+            app.logger.info("Step 2: Transcribing audio...")
+            transcribed_text = transcribe_audio(audio_file, whisper_model)
+            if not transcribed_text:
+                app.logger.error(f"Transcription failed for {url}. Skipping.")
+                continue
+            app.logger.info("-> Transcription successful.")
 
-        app.logger.info("Step 4: Generating quiz with Gemini...")
-        key_points_string = "\n- ".join(key_points)
+            app.logger.info("Step 3: Extracting key points...")
+            key_points = extract_keypoints_improved(transcribed_text)
+            if not key_points:
+                app.logger.warning(f"No key points were extracted from {url}.")
+            else:
+                all_key_points.extend(key_points)
+                app.logger.info(f"-> Extracted {len(key_points)} key points from this video.")
+
+        if not all_key_points:
+            raise Exception("No key points could be extracted from any of the provided videos.")
+
+        app.logger.info(f"--- Combined Processing ---")
+        app.logger.info(f"Total key points extracted from all videos: {len(all_key_points)}")
+        
+        app.logger.info("Step 4: Generating quiz with Gemini from combined key points...")
+        key_points_string = "\n- ".join(all_key_points)
         raw_quiz_text = generate_quiz_with_gemini(key_points_string)
         if not raw_quiz_text:
             raise Exception("Quiz generation with Gemini API failed.")
@@ -70,5 +99,7 @@ def handle_quiz_generation():
         return jsonify({"error": "An internal server error occurred. Please check the backend logs."}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
-
+    if not whisper_model:
+        logging.error("Application cannot start because the Whisper model failed to load.")
+    else:
+        app.run(debug=True, port=5000)

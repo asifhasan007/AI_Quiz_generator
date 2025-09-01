@@ -1,4 +1,3 @@
-import whisper
 def transcribe_audio(audio_path, model):
     try:
         print("--> Transcribing audio...")
