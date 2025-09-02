@@ -21,6 +21,7 @@
     <div *ngFor="let question of quiz; let i = index" class="question-card">
       <p class="question-text">{{ question.question }}</p>
 
+
       <!-- Options for Multiple Choice questions -->
       <div *ngIf="question.type === 'Multiple Choice'" class="options-container">
         <div *ngFor="let option of question.options; let j = index" class="option">
