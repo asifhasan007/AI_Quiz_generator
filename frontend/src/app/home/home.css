@@ -1,0 +1,182 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+}
+
+.home-container {
+  display: grid;
+  place-items: center;
+  height: 100%;
+}
+
+/* Card Container for animation */
+.card-container {
+    animation: fadeIn 0.7s ease-in-out;
+}
+
+/* General Card Styles */
+.card {
+  position: relative;
+  background: #ffffff;
+  padding: 30px 35px;
+  width: 420px;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(23, 37, 91, 0.12);
+  text-align: center;
+}
+
+/* "Get Started" Card Specifics */
+.description-card {
+  text-align: center;
+}
+
+.description-card h1 {
+  font-size: 2rem;
+  color: #001844;
+  margin-bottom: 20px;
+}
+
+.description-card p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 25px;
+}
+
+.get-started-btn {
+  background: #001844;
+  color: white;
+  padding: 5px 10px; 
+  font-size: 1rem;  
+  font-weight: 500;
+  border-radius: 8px; 
+  cursor: pointer;
+  border: none;
+  transition: background 0.3s, transform 0.2s;
+  display: inline-flex; 
+  align-items: center;
+  gap: 8px;
+  width: auto;
+}
+.get-started-btn:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+}
+
+/* Back Button Styles */
+.back-btn {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s;
+}
+
+.back-btn:hover {
+  color: #001844;
+}
+
+/* Main Upload Card Styles */
+.card h2 {
+  margin-top: 20px;
+  margin-bottom: 25px;
+  font-weight: 600;
+  color: #001844;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin: 12px 0;
+  padding: 14px 0;
+  border: none;
+  background: #001844;
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s;
+}
+
+.btn i {
+  font-size: 1.15em;
+}
+
+.btn:hover {
+  background: #0056b3;
+}
+
+.input-box {
+  margin-top: 25px;
+  text-align: left;
+}
+
+.input-box label {
+  font-weight: 500;
+  color: #2a2a2a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.input-box input,
+.input-box textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1.5px solid #e3e9f0;
+  font-size: 1rem;
+  background: #f8fbfd;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.input-box input:focus,
+.input-box textarea:focus {
+  border: 1.5px solid #001844;
+  outline: none;
+}
+
+.input-box textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.submit-btn {
+  background: linear-gradient(90deg, #28a745 60%, #57d777 100%);
+}
+
+.submit-btn:hover {
+  background: linear-gradient(90deg, #176f35 60%, #199c68 100%);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@media (max-width: 500px) {
+  .card {
+    width: 90vw;
+    padding: 25px 20px;
+  }
+}
