@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home'; 
 import { SingleVideoQuizzes } from './pages/single-video-quizzes/single-video-quizzes'; 
 import { PdfQuizzes } from './pages/pdf-quizzes/pdf-quizzes'; 
+import { MultipleVideosQuizzes } from './pages/multiple-videos-quizzes/multiple-videos-quizzes';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -13,6 +14,8 @@ export const routes: Routes = [
   
   // Route for PDF quiz results
   { path: 'quizzes/pdf', component: PdfQuizzes },
+
+  { path: 'quizzes/multiple-videos-quizzes', component: MultipleVideosQuizzes },
   
   // Wildcard route to redirect any unknown paths to home
   { path: '**', redirectTo: '/home' } 

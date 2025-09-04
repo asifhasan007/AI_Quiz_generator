@@ -1,66 +1,47 @@
-<div class="quiz-container">
-  <h1>Auto Quiz Generator</h1>
+<div class="quiz-display-container">
+  <!-- ✅ Display the source URL in the title -->
+  <h1>Quiz from: <a [href]="source" target="_blank">{{ source }}</a></h1>
 
-  <!-- Results Summary: This section is hidden until the quiz is submitted -->
-  <div *ngIf="isSubmitted" class="results-summary">
-    <h2>
-      You scored {{ getScore() }} out of {{ quiz.length }}
-    </h2>
-    <button class="btn" (click)="startNewQuiz()">Create a New Quiz</button>
+  <!-- ✅ Loading indicator for when regeneration is in progress -->
+  <div *ngIf="isLoading" class="loading-state">
+    <p>
+      <i class="fas fa-spinner fa-spin"></i> Regenerating your quiz, please wait...
+    </p>
   </div>
 
-  <!-- Fallback Message: Shown if no quiz data is found -->
-  <div *ngIf="!quiz || quiz.length === 0" class="no-quiz">
+  <!-- Fallback Message -->
+  <div *ngIf="!quiz || quiz.length === 0 && !isLoading" class="no-quiz">
     <p>No quiz data found. Please return to the home page to generate a new quiz.</p>
-    <button class="btn" (click)="startNewQuiz()">Go to Home</button>
+    <button class="btn" (click)="goBackToHome()">Go to Home</button>
   </div>
 
-  <!-- The main quiz form, which is displayed if quiz data exists -->
-  <form *ngIf="quiz.length > 0" (ngSubmit)="submitQuiz()" #quizForm="ngForm">
-    <!-- Loop through each question in the quiz array -->
-    <div *ngFor="let question of quiz; let i = index" class="question-card">
+  <!-- Main Quiz Display -->
+  <div *ngIf="quiz.length > 0 && !isLoading">
+    <div *ngFor="let question of quiz; let i = index" class="question-block">
+      <!-- Question Text, Options, and Answer -->
       <p class="question-text">{{ question.question }}</p>
-
-
-      <!-- Options for Multiple Choice questions -->
-      <div *ngIf="question.type === 'Multiple Choice'" class="options-container">
-        <div *ngFor="let option of question.options; let j = index" class="option">
-          <input
-            type="radio"
-            [id]="'q' + i + 'o' + j"
-            [name]="'question' + i"
-            [value]="option"
-            [(ngModel)]="userAnswers[i]"
-            [disabled]="isSubmitted"
-          />
-          <label
-            [for]="'q' + i + 'o' + j"
-            [class.correct]="isSubmitted && question.answer === option"
-            [class.incorrect]="isSubmitted && userAnswers[i] === option && question.answer !== option"
-          >
-            {{ option }}
-          </label>
+      <div class="options-list">
+        <div *ngIf="question.type === 'Multiple Choice'">
+          <div *ngFor="let option of question.options; let j = index">
+            {{ getOptionLetter(j) }}. {{ option }}
+          </div>
+        </div>
+        <div *ngIf="question.type === 'True/False'">
+          <div>A. True</div>
+          <div>B. False</div>
         </div>
       </div>
-
-      <!-- Options for True/False questions -->
-      <div *ngIf="question.type === 'True/False'" class="options-container">
-        <div class="option">
-          <input type="radio" [id]="'q' + i + 'o-true'" [name]="'question' + i" value="True" [(ngModel)]="userAnswers[i]" [disabled]="isSubmitted" />
-          <label [for]="'q' + i + 'o-true'" [class.correct]="isSubmitted && question.answer === 'True'" [class.incorrect]="isSubmitted && userAnswers[i] === 'True' && question.answer !== 'True'">
-            True
-          </label>
-        </div>
-        <div class="option">
-          <input type="radio" [id]="'q' + i + 'o-false'" [name]="'question' + i" value="False" [(ngModel)]="userAnswers[i]" [disabled]="isSubmitted" />
-          <label [for]="'q' + i + 'o-false'" [class.correct]="isSubmitted && question.answer === 'False'" [class.incorrect]="isSubmitted && userAnswers[i] === 'False' && question.answer !== 'False'">
-            False
-          </label>
-        </div>
-      </div>
+      <p class="answer-text">ANSWER: {{ getCorrectAnswerLetter(question) }}</p>
     </div>
 
-    <!-- The submit button is hidden after the quiz has been submitted -->
-    <button *ngIf="!isSubmitted" type="submit" class="btn submit-btn">Submit Quiz</button>
-  </form>
+    <!-- ✅ Action Buttons Group -->
+    <div class="button-group">
+      <button class="btn back-btn" (click)="goBackToHome()">
+        <i class="fas fa-arrow-left"></i> Back to All Quizzes
+      </button>
+      <button class="btn regenerate-btn" (click)="regenerateQuiz()" [disabled]="isLoading">
+        <i class="fas fa-sync-alt"></i> Regenerate Quiz
+      </button>
+    </div>
+  </div>
 </div>

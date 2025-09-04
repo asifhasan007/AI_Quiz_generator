@@ -1,132 +1,129 @@
-/* General container for the entire quiz page */
-.quiz-container {
+.quiz-display-container {
   max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
+  margin: 2rem auto;
+  padding: 2rem;
   background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
 
 h1 {
-  color: #333;
-  margin-bottom: 20px;
+  text-align: center;
+  color: #1e3a8a; /* Dark Blue */
+  margin-bottom: 2rem;
+  font-weight: 600;
 }
 
-/* Card for each individual question */
-.question-card {
-  background-color: #f9f9f9;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  text-align: left;
+.question-block {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.question-block:last-of-type {
+  border-bottom: none;
 }
 
 .question-text {
-  font-size: 1.2em;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #444;
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
+  line-height: 1.5;
 }
 
-/* Container for the answer options */
-.options-container {
+.options-list {
+  padding-left: 20px;
+  margin-bottom: 1rem;
+  line-height: 1.8;
+  color: #4b5563;
+}
+
+.answer-text {
+  font-weight: 700;
+  color: #166534; /* Dark Green */
+  font-size: 1rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #1e3a8a;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.no-quiz {
+  text-align: center;
+  padding: 2rem;
+}
+/* ... (keep all existing styles) ... */
+
+h1 {
+  /* ... (existing h1 styles) ... */
+  font-size: 1.5rem;
+  word-break: break-all; /* Handle long filenames */
+}
+
+/* New styles for button group and loading state */
+.button-group {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2.5rem;
 }
 
-.option {
+.btn {
   display: flex;
   align-items: center;
-}
-
-/* Styling for radio buttons and their labels */
-.option input[type="radio"] {
-  margin-right: 12px;
-  width: 18px;
-  height: 18px;
-}
-
-.option label {
-  flex-grow: 1;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s, border-color 0.3s;
-}
-
-.option label:hover {
-  background-color: #f0f0f0;
-}
-
-/* --- State-based styling after submission --- */
-
-/* Correct answer styling */
-.option label.correct {
-  background-color: #d4edda; /* Light green */
-  border-color: #c3e6cb;
-  color: #155724;
-  font-weight: bold;
-}
-
-/* Incorrect answer styling */
-.option label.incorrect {
-  background-color: #f8d7da; /* Light red */
-  border-color: #f5c6cb;
-  color: #721c24;
-  font-weight: bold;
-}
-
-/* General button styling */
-.btn {
-  padding: 12px 24px;
-  font-size: 1em;
-  color: white;
-  background-color: #007bff;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s;
-  margin-top: 20px;
+  transition: background-color 0.2s, transform 0.2s;
 }
 
-.btn:hover {
-  background-color: #0056b3;
+.back-btn {
+  background-color: #6b7280; /* Gray */
+  color: white;
+  margin: 20px auto 0 auto;
+  font-size: 1rem;
+  display: block; 
+  width: fit-content; 
+  padding: 12px 25px; 
 }
+
+
+.regenerate-btn {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: #fff;
+  margin: 20px auto 0 auto;
+  font-size: 1rem;
+  display: block; 
+  width: fit-content; 
+  padding: 12px 25px; 
+}
+
 
 .btn:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-/* --- Results and Fallback Sections --- */
-
-/* Styling for the final score summary */
-.results-summary {
-  padding: 20px;
-  border: 2px solid #007bff;
-  border-radius: 8px;
-  background-color: #f0f8ff;
-}
-
-.results-summary h2 {
-  font-size: 1.5em;
-  color: #333;
-  margin-bottom: 15px;
-}
-
-/* Styling for the message when no quiz is found */
-.no-quiz {
-  padding: 20px;
+.loading-state {
   text-align: center;
-  color: #666;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #555;
 }
 
-.no-quiz p {
-  font-size: 1.1em;
-  margin-bottom: 20px;
+.loading-state .fas {
+  margin-right: 0.5rem;
 }
