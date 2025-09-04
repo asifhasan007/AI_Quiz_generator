@@ -4,12 +4,9 @@ from dotenv import load_dotenv
 import os
 def generate_quiz_with_gemini(key_points_text, num_mcq=5, num_tf=3):
     print("\n[3/4] Generating quiz using Google Gemini API...")
-    # This line reads the .env file and loads the variables into the environment
-    load_dotenv() 
-    
-    # This securely gets the API key from the environment.
-    # It will return None if the key is not found.
-    api_key = os.getenv("GEMINI_API_KEY") 
+    load_dotenv()
+
+    api_key = os.getenv("GEMINI_API_KEY")
     
     if not api_key:
         print("Error: GEMINI_API_KEY not found. Make sure it is set in your .env file.")
@@ -21,27 +18,25 @@ def generate_quiz_with_gemini(key_points_text, num_mcq=5, num_tf=3):
         print(f"Error configuring Gemini API: {e}")
         return None
 
-    # The rest of the function remains exactly the same...
-    # Inside your generate_quiz_with_gemini function, replace the old prompt with this one:
-
     prompt = f"""
-    You are an expert quiz creator. Based on the key points provided, generate a quiz.
+    You are an expert quiz creator. Your task is to generate a quiz based on the key points provided below. You must follow all formatting rules precisely.
 
     **Formatting Rules:**
-    1.  generate exactly {num_mcq} multiple-choice questions with four options (A, B, C, D) each.
-    3.  The final line for each MCQ must be "ANSWER: <Letter>".
-    4.  Next, create a second section with the exact header "--- TRUE/FALSE ---".
-    5.  Under this header, generate exactly {num_tf} True/False questions.
-    6.  The final line for each True/False question must be "ANSWER: True" or "ANSWER: False".
+    1.  Create a section for Multiple Choice Questions.
+    2.  Generate exactly {num_mcq} multiple-choice questions with four options each (A, B, C, D).
+    3.  The final line for each multiple-choice question must be in the format "ANSWER: [LETTER]". For example: "ANSWER: C".
+    4.  After the multiple-choice questions, you MUST include a separator line exactly like this: "--- TRUE/FALSE ---".
+    5.  After the separator, generate exactly {num_tf} True/False questions.
+    6.  The final line for each True/False question must be in the format "ANSWER: True" or "ANSWER: False".
     7.  Do not add any other text, introductions, or conclusions.
-
+    
     **KEY POINTS TO USE FOR THE QUIZ:**
     ---
     {key_points_text}
     ---
     """
     try:
-        model = genai.GenerativeModel('gemini-2.0-flash-lite')   #gemini-1.5-flash
+        model = genai.GenerativeModel('gemini-2.0-flash-lite')
         response = model.generate_content(prompt)
         quiz_text = response.text.strip()
         print("-> Successfully received quiz from Gemini.")
@@ -63,7 +58,6 @@ def parse_quiz_text(quiz_text):
     mcq_section_text = ""
     tf_section_text = ""
     
-    # case-insensitive search for the headers
     tf_split = re.split(r'---\s*TRUE/FALSE\s*---', quiz_text, flags=re.IGNORECASE)
     
     if len(tf_split) == 2:
