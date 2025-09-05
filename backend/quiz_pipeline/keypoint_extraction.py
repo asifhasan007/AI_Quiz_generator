@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from keybert import KeyBERT
 from sentence_transformers import SentenceTransformer, util
-def extract_keypoints_improved(transcribed_text, num_key_points=10):
+def extract_keypoints_improved(transcribed_text, num_key_points=20):
     try:
         question_generator = pipeline("text2text-generation", model="mrm8488/t5-base-finetuned-question-generation-ap")
         answer_extractor = pipeline("question-answering", model="deepset/roberta-large-squad2")

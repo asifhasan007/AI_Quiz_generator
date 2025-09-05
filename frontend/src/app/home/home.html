@@ -42,7 +42,7 @@
           <div class="option-toggle">
             <button type="button" class="btn" [class.active]="selectedOption === 'single'"
               (click)="selectOption('single')" [disabled]="isLoading">
-              <i class="fas fa-link"></i> Video Link
+              <i class="fas fa-link"></i> Video Source
             </button>
             <button type="button" class="btn" [class.active]="selectedOption === 'pdf'" (click)="selectOption('pdf')"
               [disabled]="isLoading">
@@ -52,13 +52,13 @@
 
           <!-- Input Form -->
           <form (ngSubmit)="submit()">
-            <!-- Video Link Input -->
+            <!-- Video Link/Path Input -->
             <div *ngIf="selectedOption === 'single'" class="input-box animate">
-              <label for="videoLink"><i class="fas fa-link"></i> Video Links</label>
+              <label for="videoLink"><i class="fas fa-link"></i> Video Link or Local Path</label>
               <textarea id="videoLink" [(ngModel)]="singleVideoLink" name="singleVideoLink"
-                placeholder="Paste one or multiple video links (newline or comma separated)..."
+                placeholder="Paste video URL(s) or local file path(s)..."
                 [disabled]="isLoading"></textarea>
-              <small>Supports single or multiple video links</small>
+              <small>Supports YouTube/Vimeo URLs or local paths (e.g., C:\videos\lecture.mp4)</small>
             </div>
 
             <!-- PDF Upload -->

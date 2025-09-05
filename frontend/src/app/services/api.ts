@@ -10,14 +10,23 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  // Renamed for clarity, was generateQuiz
+  // Handles video URLs
   generateQuizFromVideo(videoUrl: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/generate-quiz`, { video_url: videoUrl });
   }
 
-  // New method for PDF uploads
+  // Handles PDF file uploads
   generateQuizFromPdf(formData: FormData): Observable<any> {
-    // HttpClient will automatically set the 'Content-Type' to 'multipart/form-data'
     return this.http.post(`${this.baseUrl}/generate-quiz`, formData);
+  }
+
+  // New method for single local video paths
+  generateQuizFromVideoWithOsPath(osVideoPath: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/generate-quiz`, { os_video_path: osVideoPath });
+  }
+
+  // New method for multiple local video paths (joined as a string)
+  generateQuizFromMultipleOsPaths(osVideoPaths: string[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/generate-quiz`, { os_video_path: osVideoPaths.join(',') });
   }
 }

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api';
-// import jsPDF from 'jspdf'; // Keep if you might use it again
 import { QuizStateService } from '../services/quiz-state.service';
 
 @Component({
@@ -17,17 +16,14 @@ export class HomeComponent implements OnInit {
   singleVideoLink: string = '';
   selectedFile: File | null = null;
   selectedFileName: string | null = null;
-  
   isLoading: boolean = false;
   errorMessage: string | null = null;
-  
   isStarted: boolean = true;
   selectedOption: 'single' | 'pdf' = 'single';
-
   quizGenerated: boolean = false;
   generatedItems: any[] = [];
-
-  // Properties for the smart progress bar
+  
+  // Properties for the fake progress bar
   progress: number = 0;
   progressMessage: string = "Starting...";
   private progressInterval: any = null;
@@ -43,35 +39,32 @@ export class HomeComponent implements OnInit {
     this.quizGenerated = this.quizStateService.quizGenerated;
   }
 
-// Method to start the fake progress simulation
-private startFakeProgress(): void {
-  this.progress = 0;
-  this.isLoading = true;
-  this.progressMessage = "Starting quiz generation...";
-
-  const phases = [
-    { end: 25, message: "Analyzing content..." },
-    { end: 65, message: "Extracting key points..." },
-    { end: 85, message: "Generating questions..." },
-    { end: 95, message: "Finalizing quiz..." }
-  ];
-
-  let currentPhase = 0;
-
-  this.progressInterval = setInterval(() => {
-    if (currentPhase < phases.length) {
-      if (this.progress < phases[currentPhase].end) {
-        this.progress++;
-        this.progressMessage = phases[currentPhase].message;
+  // Method to start the fake progress simulation
+  private startFakeProgress(): void {
+    this.progress = 0;
+    this.isLoading = true;
+    this.progressMessage = "Starting quiz generation...";
+    const phases = [
+      { end: 25, message: "Analyzing content..." },
+      { end: 65, message: "Extracting key points..." },
+      { end: 85, message: "Generating questions..." },
+      { end: 95, message: "Finalizing quiz..." }
+    ];
+    let currentPhase = 0;
+    this.progressInterval = setInterval(() => {
+      if (currentPhase < phases.length) {
+        if (this.progress < phases[currentPhase].end) {
+          this.progress++;
+          this.progressMessage = phases[currentPhase].message;
+        } else {
+          currentPhase++;
+        }
       } else {
-        currentPhase++;
+        this.progressMessage = "Almost done...";
+        clearInterval(this.progressInterval);
       }
-    } else {
-      this.progressMessage = "Almost done...";
-      clearInterval(this.progressInterval);
-    }
-  }, 1500); // adjust speed here (200ms = smooth, 500ms = slower)
-}
+    }, 1500);
+  }
 
   // Method to finalize the progress
   private completeProgress(): void {
@@ -91,7 +84,6 @@ private startFakeProgress(): void {
     this.quizStateService.clearState();
     this.generatedItems = [];
     this.startFakeProgress(); // Start the progress bar
-
     if (this.selectedOption === 'single') {
       this.submitLink();
     } else if (this.selectedOption === 'pdf') {
@@ -102,37 +94,55 @@ private startFakeProgress(): void {
   private submitLink(): void {
     const links = this.singleVideoLink.trim();
     if (!links) {
-      this.errorMessage = "Please enter one or more valid video links.";
+      this.errorMessage = "Please enter one or more valid video links or paths.";
       this.isLoading = false;
       clearInterval(this.progressInterval);
       return;
     }
-    const linkArray = links.split(/[\n,]/).map(link => link.trim()).filter(link => link);
+
+    const isLocalPath = (str: string) => /^([a-zA-Z]:\\|\/)/.test(str.trim());
+    const linkArray = links.split(/[\n,]+/).map(link => link.trim()).filter(link => link);
     const submissionType = linkArray.length > 1 ? 'multiple' : 'single';
     this.errorMessage = null;
 
-    this.apiService.generateQuizFromVideo(links).subscribe({
-      next: (response: any[]) => {
-        this.completeProgress(); // Finalize the progress bar
+    const handleSuccess = (response: any[]) => {
+        this.completeProgress();
         const newItems: any[] = [];
         response.forEach(result => {
-          newItems.push({
-            source: result.source_name,
-            type: 'video',
-            quiz: result.quiz_data,
-            error: result.error,
-            submissionType: submissionType
-          });
+            newItems.push({
+                source: result.source_name || result.source, // **FIX: Check for both properties**
+                type: 'video',
+                quiz: result.quiz_data,
+                error: result.error,
+                submissionType: submissionType
+            });
         });
         this.quizStateService.addItems(newItems);
         this.singleVideoLink = '';
-      },
-      error: (err) => {
+    };
+
+    const handleError = (err: any, context: string) => {
         this.isLoading = false;
         clearInterval(this.progressInterval);
-        this.errorMessage = `Error: ${err.error?.error || 'Failed to generate quiz.'}`;
-      }
-    });
+        this.errorMessage = `Error: ${err.error?.error || 'Failed to generate quiz from ' + context + '.'}`;
+    };
+
+    if (linkArray.length > 0 && isLocalPath(linkArray[0])) {
+        const apiCall = linkArray.length === 1 
+            ? this.apiService.generateQuizFromVideoWithOsPath(linkArray[0])
+            : this.apiService.generateQuizFromMultipleOsPaths(linkArray);
+        
+        apiCall.subscribe({
+            next: handleSuccess,
+            error: (err) => handleError(err, 'local video')
+        });
+    } else {
+        const urlString = linkArray.join(',');
+        this.apiService.generateQuizFromVideo(urlString).subscribe({
+            next: handleSuccess,
+            error: (err) => handleError(err, 'URL')
+        });
+    }
   }
 
   private submitPdf(): void {
@@ -149,11 +159,11 @@ private startFakeProgress(): void {
 
     this.apiService.generateQuizFromPdf(formData).subscribe({
       next: (response: any[]) => {
-        this.completeProgress(); // Finalize the progress bar
+        this.completeProgress();
         const newItems: any[] = [];
         response.forEach(result => {
           newItems.push({
-            source: result.source_name,
+            source: result.source_name || result.source, // **FIX: Check for both properties**
             type: 'pdf',
             quiz: result.quiz_data,
             error: result.error
@@ -195,6 +205,11 @@ private startFakeProgress(): void {
   }
 
   downloadQuiz(item: any): void {
+    // This function will now work because item.source is guaranteed to be a string
+    if (!item.source) {
+        alert('Could not download quiz. Source name is missing.');
+        return;
+    }
     const quizText = this.parseQuizToText(item.quiz);
     if (!quizText) {
       alert('Could not download quiz. The data might be empty or invalid.');
