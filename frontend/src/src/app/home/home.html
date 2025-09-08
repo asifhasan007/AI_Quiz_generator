@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Quiz Generator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="home.css">
+</head>
+
+<body>
+  <div class="layout">
+
+    <!-- Left Section -->
+    <div class="left-panel">
+      <div class="branding">
+        <h1><span class="highlight">Auto Quiz Generator</span></h1>
+        <p>
+          Create quizzes from <strong>lectures</strong> & <strong>notes</strong> in just one click.
+          Smarter learning for <span class="accent">students</span>, <span class="accent">professionals</span> & <span
+            class="accent">educators</span>.
+        </p>
+        <div class="tagline">
+          <i class="fas fa-bolt"></i> Fast.
+          <i class="fas fa-brain"></i> Smart.
+          <i class="fas fa-check-circle"></i> Reliable.
+        </div>
+
+        <!-- New Button -->
+        <div class="all-quizzes-btn-container">
+          <button class="btn all-quizzes-btn" (click)="viewAllQuizzes()">
+            <i class="fas fa-list"></i> View All Quizzes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Section -->
+    <div class="right-panel">
+      <div class="card">
+
+        <!-- FORM (before generating) -->
+        <div *ngIf="!quizGenerated">
+          <h2 class="form-title">Generate Your Quiz</h2>
+          <p class="form-subtitle">Choose your source below</p>
+
+          <!-- Option Toggle -->
+          <div class="option-toggle">
+            <button type="button" class="btn" [class.active]="selectedOption === 'single'"
+              (click)="selectOption('single')" [disabled]="isLoading">
+              <i class="fas fa-link"></i> Video Source
+            </button>
+            <button type="button" class="btn" [class.active]="selectedOption === 'pdf'" (click)="selectOption('pdf')"
+              [disabled]="isLoading">
+              <i class="fas fa-file-pdf"></i> Upload PDF
+            </button>
+          </div>
+
+          <!-- Input Form -->
+          <form (ngSubmit)="submit()">
+            <!-- Video Link/Path Input -->
+            <div *ngIf="selectedOption === 'single'" class="input-box animate">
+              <label for="videoLink"><i class="fas fa-link"></i> Video Link or Local Path</label>
+              <textarea id="videoLink" [(ngModel)]="singleVideoLink" name="singleVideoLink"
+                placeholder="Paste video URL(s) or local file path(s)..."
+                [disabled]="isLoading"></textarea>
+              <small>Supports YouTube/Vimeo URLs or local paths (e.g., C:\videos\lecture.mp4)</small>
+            </div>
+
+            <!-- PDF Upload -->
+            <div *ngIf="selectedOption === 'pdf'" class="input-box animate">
+              <label for="pdfFile"><i class="fas fa-file-pdf"></i> Upload PDF</label>
+              <input id="pdfFile" type="file" accept=".pdf" (change)="onFileSelected($event)" [disabled]="isLoading" />
+              <small *ngIf="selectedFileName">{{ selectedFileName }}</small>
+              <small>Upload study notes, eBooks or slides</small>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn submit-btn" [disabled]="isLoading">
+              <ng-container *ngIf="!isLoading">
+                <i class="fas fa-paper-plane"></i> Generate Quiz
+              </ng-container>
+              <ng-container *ngIf="isLoading">
+                <i class="fas fa-spinner fa-spin"></i> Generating...
+              </ng-container>
+            </button>
+
+            <!-- Smart Progress Bar -->
+            <div class="progress-container" *ngIf="isLoading">
+              <div class="progress-bar" [style.width.%]="progress"></div>
+              <p class="progress-message">{{ progressMessage }}</p>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="errorMessage && !isLoading" class="error-message">
+              <p>{{ errorMessage }}</p>
+            </div>
+          </form>
+        </div>
+
+        <!-- After Quiz Generation -->
+        <div *ngIf="quizGenerated" class="table-container">
+          <table class="quiz-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Source</th>
+                <th>Type</th>
+                <th>View Quiz</th>
+                <th>Download</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of generatedItems; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ item.source }}</td>
+                <td>{{ item.type }}</td>
+                <td>
+                  <button class="btn-table view-btn" (click)="viewQuiz(item)">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+                <td>
+                  <button class="btn-table download-btn" (click)="downloadQuiz(item)">
+                    <i class="fas fa-download"></i> Download
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Back Button -->
+          <div class="back-btn-container">
+            <button class="btn back-btn" (click)="goBack()">
+              <i class="fas fa-arrow-left"></i> Generate New Quiz
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
