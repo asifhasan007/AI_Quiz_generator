@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api';
 import { QuizStateService } from '../services/quiz-state.service';
+import { QuizStorageService } from '../services/quiz-storage.service'; // Import the new service
 
 @Component({
   selector: 'app-home',
@@ -22,8 +23,6 @@ export class HomeComponent implements OnInit {
   selectedOption: 'single' | 'pdf' = 'single';
   quizGenerated: boolean = false;
   generatedItems: any[] = [];
-  
-  // Properties for the fake progress bar
   progress: number = 0;
   progressMessage: string = "Starting...";
   private progressInterval: any = null;
@@ -31,15 +30,15 @@ export class HomeComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private router: Router,
-    private quizStateService: QuizStateService
+    private quizStateService: QuizStateService,
+    private quizStorageService: QuizStorageService // Inject the service
   ) {}
 
   ngOnInit(): void {
     this.generatedItems = this.quizStateService.generatedItems;
     this.quizGenerated = this.quizStateService.quizGenerated;
   }
-
-  // Method to start the fake progress simulation
+  
   private startFakeProgress(): void {
     this.progress = 0;
     this.isLoading = true;
@@ -63,10 +62,9 @@ export class HomeComponent implements OnInit {
         this.progressMessage = "Almost done...";
         clearInterval(this.progressInterval);
       }
-    }, 1500);
+    }, 1500); // Speed up progress bar
   }
 
-  // Method to finalize the progress
   private completeProgress(): void {
     if (this.progressInterval) {
       clearInterval(this.progressInterval);
@@ -75,15 +73,14 @@ export class HomeComponent implements OnInit {
     this.progressMessage = "Quiz generated successfully!";
     setTimeout(() => {
       this.isLoading = false;
-      this.ngOnInit(); // Refresh state to show table
+      this.ngOnInit();
     }, 1000);
   }
 
-  // Updated main submit function
   submit(): void {
     this.quizStateService.clearState();
     this.generatedItems = [];
-    this.startFakeProgress(); // Start the progress bar
+    this.startFakeProgress();
     if (this.selectedOption === 'single') {
       this.submitLink();
     } else if (this.selectedOption === 'pdf') {
@@ -106,42 +103,39 @@ export class HomeComponent implements OnInit {
     this.errorMessage = null;
 
     const handleSuccess = (response: any[]) => {
-        this.completeProgress();
-        const newItems: any[] = [];
-        response.forEach(result => {
-            newItems.push({
-                source: result.source_name || result.source, // **FIX: Check for both properties**
-                type: 'video',
-                quiz: result.quiz_data,
-                error: result.error,
-                submissionType: submissionType
-            });
-        });
-        this.quizStateService.addItems(newItems);
-        this.singleVideoLink = '';
+      this.completeProgress();
+      const newItems: any[] = [];
+      response.forEach(result => {
+        const newItem = {
+          source: result.source_name || result.source,
+          type: 'video',
+          quiz: result.quiz_data,
+          error: result.error,
+          submissionType: submissionType
+        };
+        newItems.push(newItem);
+        if (!newItem.error) {
+            this.quizStorageService.addQuiz(newItem); // Save to IndexedDB
+        }
+      });
+      this.quizStateService.addItems(newItems);
+      this.singleVideoLink = '';
     };
 
     const handleError = (err: any, context: string) => {
-        this.isLoading = false;
-        clearInterval(this.progressInterval);
-        this.errorMessage = `Error: ${err.error?.error || 'Failed to generate quiz from ' + context + '.'}`;
+      this.isLoading = false;
+      clearInterval(this.progressInterval);
+      this.errorMessage = `Error: ${err.error?.error || 'Failed to generate quiz from ' + context + '.'}`;
     };
 
     if (linkArray.length > 0 && isLocalPath(linkArray[0])) {
-        const apiCall = linkArray.length === 1 
-            ? this.apiService.generateQuizFromVideoWithOsPath(linkArray[0])
-            : this.apiService.generateQuizFromMultipleOsPaths(linkArray);
-        
-        apiCall.subscribe({
-            next: handleSuccess,
-            error: (err) => handleError(err, 'local video')
-        });
+      const apiCall = linkArray.length === 1
+        ? this.apiService.generateQuizFromVideoWithOsPath(linkArray[0])
+        : this.apiService.generateQuizFromMultipleOsPaths(linkArray);
+      apiCall.subscribe({ next: handleSuccess, error: (err) => handleError(err, 'local video') });
     } else {
-        const urlString = linkArray.join(',');
-        this.apiService.generateQuizFromVideo(urlString).subscribe({
-            next: handleSuccess,
-            error: (err) => handleError(err, 'URL')
-        });
+      const urlString = linkArray.join(',');
+      this.apiService.generateQuizFromVideo(urlString).subscribe({ next: handleSuccess, error: (err) => handleError(err, 'URL') });
     }
   }
 
@@ -152,6 +146,7 @@ export class HomeComponent implements OnInit {
       clearInterval(this.progressInterval);
       return;
     }
+
     this.quizStateService.setLastUploadedFile(this.selectedFile);
     this.errorMessage = null;
     const formData = new FormData();
@@ -162,12 +157,16 @@ export class HomeComponent implements OnInit {
         this.completeProgress();
         const newItems: any[] = [];
         response.forEach(result => {
-          newItems.push({
-            source: result.source_name || result.source, // **FIX: Check for both properties**
+          const newItem = {
+            source: result.source_name || result.source,
             type: 'pdf',
             quiz: result.quiz_data,
             error: result.error
-          });
+          };
+          newItems.push(newItem);
+          if (!newItem.error) {
+              this.quizStorageService.addQuiz(newItem); // Save to IndexedDB
+          }
         });
         this.quizStateService.addItems(newItems);
       },
@@ -178,37 +177,23 @@ export class HomeComponent implements OnInit {
       }
     });
   }
-  
+
   viewQuiz(item: any): void {
     let targetRoute: string;
     if (item.type === 'pdf') {
       targetRoute = '/quizzes/pdf';
     } else if (item.type === 'video') {
-      if (item.submissionType === 'multiple') {
-        targetRoute = '/quizzes/multiple-videos-quizzes';
-      } else {
-        targetRoute = '/quizzes/single-video';
-      }
+      targetRoute = item.submissionType === 'multiple' ? '/quizzes/multiple-videos-quizzes' : '/quizzes/single-video';
     } else {
       return;
     }
     this.router.navigate([targetRoute], { state: { quiz: item.quiz, source: item.source } });
   }
   
-  goBack(): void {
-    this.quizStateService.clearState();
-    this.ngOnInit();
-    this.errorMessage = null;
-    this.singleVideoLink = '';
-    this.selectedFile = null;
-    this.selectedFileName = null;
-  }
-
   downloadQuiz(item: any): void {
-    // This function will now work because item.source is guaranteed to be a string
     if (!item.source) {
-        alert('Could not download quiz. Source name is missing.');
-        return;
+      alert('Could not download quiz. Source name is missing.');
+      return;
     }
     const quizText = this.parseQuizToText(item.quiz);
     if (!quizText) {
@@ -228,46 +213,55 @@ export class HomeComponent implements OnInit {
   }
 
   private parseQuizToText(quizData: any[]): string {
-    if (!quizData || !Array.isArray(quizData)) {
-      return '';
-    }
+    if (!quizData || !Array.isArray(quizData)) { return ''; }
     let formattedText = '';
     const toLetter = (index: number) => String.fromCharCode(65 + index);
+
     const mcqs = quizData.filter(q => q.type === 'Multiple Choice');
     const trueFalse = quizData.filter(q => q.type === 'True/False');
 
-    mcqs.forEach((question, index) => {
-      formattedText += `${question.question}\n`;
-      let correctOptionLetter = '';
-      if (question.options && Array.isArray(question.options)) {
-        question.options.forEach((option: string, optIndex: number) => {
-          const optionLetter = toLetter(optIndex);
-          formattedText += `${optionLetter}. ${option}\n`;
-          if (option === question.answer) {
-            correctOptionLetter = optionLetter;
+    if(mcqs.length > 0) {
+      // formattedText += 'Multiple Choice Questions\n\n';
+      mcqs.forEach((question) => {
+          formattedText += `${question.question}\n`;
+          let correctOptionLetter = '';
+          if (question.options && Array.isArray(question.options)) {
+              question.options.forEach((option: string, optIndex: number) => {
+                  const optionLetter = toLetter(optIndex);
+                  formattedText += `${optionLetter}. ${option}\n`;
+                  if (option === question.answer) {
+                      correctOptionLetter = optionLetter;
+                  }
+              });
           }
-        });
-      }
-      formattedText += `ANSWER: ${correctOptionLetter}\n\n`;
-    });
-
-    if (mcqs.length > 0 && trueFalse.length > 0) {
-      formattedText += '\n';
+          formattedText += `ANSWER: ${correctOptionLetter}\n\n`;
+      });
     }
 
-    trueFalse.forEach((question, index) => {
-      formattedText += `${question.question}\n`;
-      formattedText += `A. True\nB. False\n`;
-      const correctAnswer = question.answer === 'True' ? 'A' : 'B';
-      formattedText += `ANSWER: ${correctAnswer}\n\n`;
-    });
-
+    if(trueFalse.length > 0) {
+      // formattedText += '\n--- TRUE/FALSE ---\n\n';
+      trueFalse.forEach((question) => {
+          formattedText += `${question.question}\n`;
+          formattedText += `A. True\nB. False\n`;
+          const correctAnswer = question.answer === 'True' ? 'A' : 'B';
+          formattedText += `ANSWER: ${correctAnswer}\n\n`;
+      });
+    }
     return formattedText.trim();
   }
 
+  goBack(): void {
+    this.quizStateService.clearState();
+    this.ngOnInit();
+    this.errorMessage = null;
+    this.singleVideoLink = '';
+    this.selectedFile = null;
+    this.selectedFileName = null;
+  }
+  
   selectOption(option: 'single' | 'pdf'): void {
     this.selectedOption = option;
-    this.errorMessage = null; 
+    this.errorMessage = null;
   }
 
   onFileSelected(event: Event): void {
@@ -284,5 +278,10 @@ export class HomeComponent implements OnInit {
         this.selectedFileName = null;
       }
     }
+  }
+
+  // New method to navigate to the all-quizzes page
+  viewAllQuizzes(): void {
+    this.router.navigate(['/all-quizzes']);
   }
 }
