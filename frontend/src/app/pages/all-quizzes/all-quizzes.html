@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="all-quizzes.css">
+</head>
+
+<body>
+  <div class="layout">
+    <!-- Left Panel for Branding -->
+    <div class="left-panel">
+       <div class="branding">
+        <h1><span class="highlight">AI Quiz Generator</span></h1>
+        Explore your <strong>quizzes</strong> instantly & track your progress in just one click.
+        Smarter learning for <span class="accent">students</span>, <span class="accent">professionals</span> & <span
+          class="accent">educators</span>.
+
+         <div class="tagline">
+          <i class="fas fa-bolt"></i> Fast.
+          <i class="fas fa-brain"></i> Smart.
+          <i class="fas fa-check-circle"></i> Reliable.
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Panel for Content -->
+    <div class="right-panel">
+      <div class="card">
+        <!-- Loading State -->
+        <div *ngIf="isLoading; else showTable" style="text-align: center;">
+          <p class="form-subtitle">Loading your saved quizzes...</p>
+        </div>
+
+        <!-- Main Content Template -->
+        <ng-template #showTable>
+          <!-- Table View if Quizzes Exist -->
+          <div *ngIf="allQuizzes.length > 0; else noQuizzes">
+            <div class="table-container">
+              <table class="quiz-table">
+                <thead>
+                  <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 40%;">Source</th>
+                    <th style="width: 15%;">Type</th>
+                    <th style="width: 40%; text-align: center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of allQuizzes; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td title="{{ item.source }}">{{ item.source }}</td>
+                    <td>{{ item.type }}</td>
+                    <td style="display: flex; gap: 8px; justify-content: center;">
+                      <button class="btn-table view-btn" (click)="viewQuiz(item)" [disabled]="item.error">
+                        <i class="fas fa-eye"></i> View
+                      </button>
+                      <button class="btn-table download-btn" (click)="downloadQuiz(item)" [disabled]="item.error">
+                        <i class="fas fa-download"></i> Download
+                      </button>
+                      <button class="btn-table delete-btn" (click)="deleteQuiz(item.id)">
+                        <i class="fas fa-trash"></i> Delete
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Empty State View -->
+          <ng-template #noQuizzes>
+            <div style="text-align: center; padding: 20px;">
+              <h3 class="form-title">No Quizzes Found</h3>
+              <p class="form-subtitle">You haven't generated any quizzes yet. Go back to the home page to create one!
+              </p>
+            </div>
+          </ng-template>
+
+          <!-- Back Button -->
+          <div class="back-btn-container">
+            <button class="back-btn" (click)="goHome()">
+              <i class="fas fa-arrow-left"></i> Back 
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

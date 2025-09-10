@@ -1,0 +1,131 @@
+.quiz-display-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  color: #1e3a8a; /* Dark Blue */
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+.question-block {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.question-block:last-of-type {
+  border-bottom: none;
+}
+
+.question-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.options-list {
+  padding-left: 20px;
+  margin-bottom: 1rem;
+  line-height: 1.8;
+  color: #4b5563;
+}
+
+.answer-text {
+  font-weight: 700;
+  color: #166534; /* Dark Green */
+  font-size: 1rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #1e3a8a;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.btn:hover {
+  background-color: #1c3170;
+}
+
+.back-btn {
+  display: block;
+  width: fit-content;
+  margin: 2.5rem auto 0 auto;
+}
+
+.no-quiz {
+  text-align: center;
+  padding: 2rem;
+}
+/* New styles for button group and loading state */
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.back-btn {
+  background-color: #6b7280; /* Gray */
+  color: white;
+  margin: 20px auto 0 auto;
+  font-size: 1rem;
+  display: block; 
+  width: fit-content; 
+  padding: 12px 25px; 
+}
+
+
+.regenerate-btn {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: #fff;
+  margin: 20px auto 0 auto;
+  font-size: 1rem;
+  display: block; 
+  width: fit-content; 
+  padding: 12px 25px; 
+}
+
+
+.btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #555;
+}
+
+.loading-state .fas {
+  margin-right: 0.5rem;
+}

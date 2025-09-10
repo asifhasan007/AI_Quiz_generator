@@ -1,12 +1,10 @@
 __pycache__/
+node_modules/
+.angular/   
 *.py[cod]
-
 venv/
 env/
-
 .env
-
 *.mp3
-
 .DS_Store
 .vscode/
