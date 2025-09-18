@@ -1,6 +1,6 @@
 __pycache__/
 node_modules/
-.angular/   
+.angular/
 *.py[cod]
 venv/
 env/
