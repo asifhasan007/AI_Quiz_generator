@@ -12,7 +12,7 @@ export class ApiService {
 
   // Handles video URLs
   generateQuizFromVideo(videoUrl: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/generate-quiz`, { video_url: videoUrl });
+    return this.http.post(`${this.baseUrl}/generate-quiz`, { source: videoUrl });
   }
 
   // Handles PDF file uploads
@@ -22,11 +22,11 @@ export class ApiService {
 
   // New method for single local video paths
   generateQuizFromVideoWithOsPath(osVideoPath: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/generate-quiz`, { os_video_path: osVideoPath });
+    return this.http.post(`${this.baseUrl}/generate-quiz`, { source: osVideoPath });
   }
 
   // New method for multiple local video paths (joined as a string)
   generateQuizFromMultipleOsPaths(osVideoPaths: string[]): Observable<any> {
-    return this.http.post(`${this.baseUrl}/generate-quiz`, { os_video_path: osVideoPaths.join(',') });
+    return this.http.post(`${this.baseUrl}/generate-quiz`, { source: osVideoPaths.join(',') });
   }
 }
