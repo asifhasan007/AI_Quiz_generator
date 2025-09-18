@@ -5,6 +5,7 @@ import { SingleVideoQuizzes } from './pages/single-video-quizzes/single-video-qu
 import { PdfQuizzes } from './pages/pdf-quizzes/pdf-quizzes';
 import { MultipleVideosQuizzes } from './pages/multiple-videos-quizzes/multiple-videos-quizzes';
 import { AllQuizzes } from './pages/all-quizzes/all-quizzes';
+import { AllQuizzes } from './pages/all-quizzes/all-quizzes';
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },

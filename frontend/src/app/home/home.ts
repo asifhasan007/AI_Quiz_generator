@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api';
 import { QuizStateService } from '../services/quiz-state.service';
-import { QuizStorageService } from '../services/quiz-storage.service'; // Import the new service
+
+import { QuizStorageService } from '../services/quiz-storage.service';
 
 @Component({
   selector: 'app-home',
@@ -31,13 +32,15 @@ export class HomeComponent implements OnInit {
     private apiService: ApiService,
     private router: Router,
     private quizStateService: QuizStateService,
-    private quizStorageService: QuizStorageService // Inject the service
+    private quizStorageService: QuizStorageService
   ) {}
 
   ngOnInit(): void {
-    this.generatedItems = this.quizStateService.generatedItems;
-    this.quizGenerated = this.quizStateService.quizGenerated;
+  this.generatedItems = this.quizStateService.generatedItems;
+  this.quizGenerated = this.quizStateService.quizGenerated;
   }
+  
+
   
   private startFakeProgress(): void {
     this.progress = 0;
@@ -74,13 +77,14 @@ export class HomeComponent implements OnInit {
     setTimeout(() => {
       this.isLoading = false;
       this.ngOnInit();
+      this.ngOnInit();
     }, 1000);
   }
 
   submit(): void {
     this.quizStateService.clearState();
     this.generatedItems = [];
-    this.startFakeProgress();
+  this.startFakeProgress();
     if (this.selectedOption === 'single') {
       this.submitLink();
     } else if (this.selectedOption === 'pdf') {
@@ -115,7 +119,7 @@ export class HomeComponent implements OnInit {
         };
         newItems.push(newItem);
         if (!newItem.error) {
-            this.quizStorageService.addQuiz(newItem); // Save to IndexedDB
+          this.quizStorageService.addQuiz(newItem); // Save to IndexedDB
         }
       });
       this.quizStateService.addItems(newItems);
@@ -165,7 +169,7 @@ export class HomeComponent implements OnInit {
           };
           newItems.push(newItem);
           if (!newItem.error) {
-              this.quizStorageService.addQuiz(newItem); // Save to IndexedDB
+            this.quizStorageService.addQuiz(newItem); // Save to IndexedDB
           }
         });
         this.quizStateService.addItems(newItems);
@@ -178,6 +182,7 @@ export class HomeComponent implements OnInit {
     });
   }
 
+
   viewQuiz(item: any): void {
     let targetRoute: string;
     if (item.type === 'pdf') {
@@ -189,6 +194,7 @@ export class HomeComponent implements OnInit {
     }
     this.router.navigate([targetRoute], { state: { quiz: item.quiz, source: item.source } });
   }
+  
   
   downloadQuiz(item: any): void {
     if (!item.source) {
@@ -221,30 +227,28 @@ export class HomeComponent implements OnInit {
     const trueFalse = quizData.filter(q => q.type === 'True/False');
 
     if(mcqs.length > 0) {
-      //formattedText += 'Multiple Choice Questions\n\n';
       mcqs.forEach((question) => {
-          formattedText += `${question.question}\n`;
-          let correctOptionLetter = '';
-          if (question.options && Array.isArray(question.options)) {
-              question.options.forEach((option: string, optIndex: number) => {
-                  const optionLetter = toLetter(optIndex);
-                  formattedText += `${optionLetter}. ${option}\n`;
-                  if (option === question.answer) {
-                      correctOptionLetter = optionLetter;
-                  }
-              });
-          }
-          formattedText += `ANSWER:${correctOptionLetter}\n\n`;
+        formattedText += `${question.question}\n`;
+        let correctOptionLetter = '';
+        if (question.options && Array.isArray(question.options)) {
+          question.options.forEach((option: string, optIndex: number) => {
+            const optionLetter = toLetter(optIndex);
+            formattedText += `${optionLetter}. ${option}\n`;
+            if (option === question.answer) {
+              correctOptionLetter = optionLetter;
+            }
+          });
+        }
+        formattedText += `ANSWER:${correctOptionLetter}\n\n`;
       });
     }
 
     if(trueFalse.length > 0) {
-      //formattedText += '\n--- TRUE/FALSE ---\n\n';
       trueFalse.forEach((question) => {
-          formattedText += `${question.question}\n`;
-          formattedText += `A. True\nB. False\n`;
-          const correctAnswer = question.answer === 'True' ? 'A' : 'B';
-          formattedText += `ANSWER: ${correctAnswer}\n\n`;
+        formattedText += `${question.question}\n`;
+        formattedText += `A. True\nB. False\n`;
+        const correctAnswer = question.answer === 'True' ? 'A' : 'B';
+        formattedText += `ANSWER: ${correctAnswer}\n\n`;
       });
     }
     return formattedText.trim();

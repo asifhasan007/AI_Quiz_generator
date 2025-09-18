@@ -1,6 +1,7 @@
 import os
 import yt_dlp
 from moviepy import VideoFileClip
+import logging 
 
 def extract_audio_from_local_video(video_path, audio_output_path):
     try:

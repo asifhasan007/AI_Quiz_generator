@@ -33,12 +33,10 @@ try:
 except Exception as e:
     logging.critical(f"Failed to load Whisper model: {e}", exc_info=True)
     whisper_model = None
-
 @app.route('/api/generate-quiz', methods=['POST'])
 def handle_quiz_generation():
     app.logger.info("API endpoint hit: /api/generate-quiz")
     content_type = request.content_type
-
     try:
         if 'application/json' in content_type:
             app.logger.info("Processing JSON request")
@@ -102,37 +100,36 @@ def handle_quiz_generation():
                     return jsonify(results)
             else:
                 return jsonify({"error": "Missing 'video_url' or 'os_video_path' in request."}), 400
-
         elif 'multipart/form-data' in content_type:
             app.logger.info("Processing form-data request for file upload...")
             if 'file' not in request.files:
                 return jsonify({"error": "Missing 'file' in form-data"}), 400
-
+ 
             file = request.files['file']
             if file.filename == '':
                 return jsonify({"error": "No file selected"}), 400
-            
+           
             if file and file.filename.lower().endswith('.pdf'):
                 app.logger.info(f"Step 1: Extracting text from PDF: {file.filename}")
                 extracted_text = extract_text_from_pdf(file)
-                
+               
                 if not extracted_text:
                     raise Exception("Text extraction from PDF failed.")
-
+ 
                 app.logger.info("Step 2: Extracting key points...")
                 key_points = extract_keypoints_improved(extracted_text)
                 if not key_points:
                     raise Exception("Key point extraction failed.")
-
+ 
                 app.logger.info("Step 3: Generating quiz...")
                 key_points_string = "\n- ".join(key_points)
                 raw_quiz_text = generate_quiz_with_gemini(key_points_string)
                 if not raw_quiz_text:
                     raise Exception("Quiz generation failed.")
-
+ 
                 app.logger.info("Step 4: Parsing quiz...")
                 mcq_quiz, tf_quiz = parse_quiz_text(raw_quiz_text)
-                
+               
                 single_quiz_response = [{
                     "source_name": file.filename,
                     "quiz_data": mcq_quiz + tf_quiz
@@ -142,11 +139,11 @@ def handle_quiz_generation():
                 return jsonify({"error": "Invalid file type. Please upload a PDF."}), 400
         else:
             return jsonify({"error": f"Unsupported Content-Type: {content_type}"}), 415
-
+ 
     except Exception as e:
         app.logger.error(f"An error occurred in the pipeline: {e}", exc_info=True)
         return jsonify({"error": "An internal server error occurred. Please check the backend logs."}), 500
-
+ 
 if __name__ == '__main__':
     if not whisper_model:
         logging.error("Application cannot start because the Whisper model failed to load.")
